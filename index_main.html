@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>M-Check : ระบบเช็คอิน</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(200deg, #0023c0, #83008fc5);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 20px;
+        }
+        
+        .header {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+            margin-bottom: 20px;
+        }
+
+        .form-section, .map-section, .camera-section {
+            width: 100%;
+            max-width: 400px;
+            margin-bottom: 20px;
+            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.842);
+        }
+
+        .form-section select {
+            text-align: center;
+            width: 80%;
+            margin-left: 10%;
+            margin-right: 10%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #000000;
+            border-radius: 5px;
+        }
+
+        .form-section input {
+            text-align: center;
+            width: 75%;
+            margin-left: 10%;
+            margin-right: 10%;
+            padding: 10px;
+            margin-top: 10px;
+            margin-bottom: 20px;
+            border: 1px solid #000000;
+            border-radius: 5px;
+        }
+
+        .btn {
+            padding: 10px 15px;
+            font-size: 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            color: white;
+        }
+
+        .location-btn { 
+            background-color: #4CAF50; 
+            margin-bottom: 10px; 
+        }
+
+        .camera-btn { 
+            background-color: #f44336; 
+        }
+
+        .submit-btn { 
+            background-color: #008CBA; 
+            margin-top: 20px; 
+        }
+        
+        .map-container, .image-preview {
+            width: 100%;
+            height: 200px;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-top: 10px;
+            background-color: #e0e0e0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .map-container iframe {
+            width: 100%;
+            height: 100%;
+        }
+        
+
+    
+
+    </style>
+</head>
+<body>
+
+    <div class="header">M-Check</div>
+
+    <div id="responseMessage" style="display:none; font-size:16px; margin-top:10px; margin-bottom:20px;"></div>
+
+
+    <!-- Form Section -->
+    <div class="form-section">
+        
+        <h3>ข้อมูลของคุณ</h3>
+        <input class="name" type="text" id="userName" placeholder="ชื่อ-นามสกุล" required>
+        
+        <select id="userDepartment">
+            <option value="" disabled selected>เลือกแผนก</option>
+            <option value="การบัญชี">การบัญชี</option>
+            <option value="เทคโนโลยีธุรกิจดิจิทัล">เทคโนโลยีธุรกิจดิจิทัล</option>
+            <option value="ไฟฟ้ากำลัง">ไฟฟ้ากำลัง</option>
+            <option value="ช่างยนต์">ช่างยนต์</option>
+        </select>
+        
+        <select id="userYear">
+            <option value="" disabled selected>ชั้นปี</option>
+            <option value="ปวช.1">ปวช.1</option>
+            <option value="ปวช.2">ปวช.2</option>
+            <option value="ปวช.3">ปวช.3</option>
+        </select>
+    </div>
+
+    <!-- Map Section -->
+    <div class="map-section">
+        <h3>ตำแหน่งของคุณ</h3>
+        <button class="btn location-btn" onclick="getLocation()">รับตำแหน่งของคุณ</button>
+        <div class="map-container" id="map">
+            <p>คุณอยู่ไหน?</p>
+        </div>
+    </div>
+
+    <!-- Camera Section -->
+    <div class="camera-section">
+        <h3>ภาพถ่ายของคุณ</h3>
+        <button class="btn camera-btn" onclick="openCamera()">1..2..แชะ!</button>
+        <div class="image-preview" id="imagePreview">
+            <p>โปรดถ่ายภาพ</p>
+        </div>
+    </div>
+
+    <!-- Submit Button -->
+    <button class="btn submit-btn" onclick="submitData()">Check in</button>
+
+    <script>
+        let currentLat = null;  // เปลี่ยนตัวแปรเป็น `currentLat` แทน `userLat`
+let currentLon = null;  // เปลี่ยนตัวแปรเป็น `currentLon` แทน `userLong`
+let base64Image = null;  // ตัวแปร base64Image ที่ใช้สำหรับเก็บรูปภาพ
+
+// Get current location
+function getLocation() {
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(function(position) {
+            currentLat = position.coords.latitude;  // กำหนดค่าพิกัดละติจูด
+            currentLon = position.coords.longitude; // กำหนดค่าพิกัดลองจิจูด
+
+            const map = document.getElementById('map');
+            map.innerHTML = `
+                <iframe width="100%" height="100%"
+                        src="https://www.google.com/maps?q=${currentLat},${currentLon}&hl=es;z=14&output=embed">
+                </iframe>`;
+            alert("Location updated successfully");
+        }, function(error) {
+            alert("Error getting location: " + error.message);
+        });
+    } else {
+        alert("Geolocation is not supported by this browser.");
+    }
+}
+
+// Open camera
+function openCamera() {
+    navigator.mediaDevices.getUserMedia({ video: true })
+    .then(function(stream) {
+        const video = document.createElement('video');
+        const canvas = document.createElement('canvas');
+        const context = canvas.getContext('2d');
+
+        video.srcObject = stream;
+        video.play();
+
+        video.addEventListener('loadeddata', function() {
+            setTimeout(function() {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+                // เลือกฟอร์แมตที่ต้องการ
+                const imageFormat = 'image/jpeg';
+                base64Image = canvas.toDataURL(imageFormat, 1.0);  // เก็บข้อมูล base64 ของภาพ
+
+                const img = document.createElement('img');
+                img.src = base64Image;
+                img.style.maxWidth = '100%';
+                img.style.borderRadius = '10px';
+
+                document.getElementById('imagePreview').innerHTML = '';
+                document.getElementById('imagePreview').appendChild(img);
+
+                stream.getTracks().forEach(track => track.stop());
+            }, 1000);
+        });
+    })
+    .catch(function(error) {
+        alert("Error accessing camera: " + error.message);
+    });
+}
+
+function submitData() {
+  const userName = document.getElementById('userName').value;
+  const userDepartment = document.getElementById('userDepartment').value;
+  const userYear = document.getElementById('userYear').value;
+
+  // ตรวจสอบว่าข้อมูลทั้งหมดมีหรือไม่
+  if (!userName || !userDepartment || !userYear || !currentLat || !currentLon || !base64Image) {
+    showMessage("กรอกข้อมูลให้ครบ.", false);
+    return;
+  }
+
+  // ข้อมูลที่จะส่งไปยัง Google Apps Script
+  const data = {
+    userName: userName,
+    userDepartment: userDepartment,
+    userYear: userYear,
+    userLat: currentLat,
+    userLong: currentLon,
+    imageData: base64Image
+  };
+
+  // ส่งข้อมูลไปยัง Google Apps Script ผ่าน HTTP POST
+  fetch('https://script.google.com/macros/s/AKfycbyEPx_5b2GB8hMXUjBiD5EQpik2ZkrABaoYRxzAxA3JDopUW0cES_yX9hRaADKo3Hd5/exec', {
+    method: 'POST',
+    body: new URLSearchParams(data),
+    headers: {
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+  })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        showMessage(data.message, true);
+      } else {
+        showMessage(data.message, false);
+      }
+    })
+    .catch(error => {
+      showMessage("Error sending data: " + error.message, false);
+    });
+}
+
+
+
+// ฟังก์ชันแสดงข้อความในหน้า Web App
+function showMessage(message, isSuccess) {
+  const messageElement = document.getElementById('responseMessage');
+  messageElement.textContent = message;
+  messageElement.style.color = isSuccess ? "green" : "red";
+  messageElement.style.display = "block"; // แสดงข้อความ
+}
+
+
+
+
+
+
+        // ฟังก์ชันในการบันทึกค่าที่กรอกลงใน localStorage
+function saveFormData() {
+    const userName = document.getElementById("userName").value;
+    const userDepartment = document.getElementById("userDepartment").value;
+    const userYear = document.getElementById("userYear").value;
+    
+    localStorage.setItem("userName", userName);
+    localStorage.setItem("userDepartment", userDepartment);
+    localStorage.setItem("userYear", userYear);
+}
+
+// ฟังก์ชันในการโหลดค่าจาก localStorage
+function loadFormData() {
+    const savedUserName = localStorage.getItem("userName");
+    const savedUserDepartment = localStorage.getItem("userDepartment");
+    const savedUserYear = localStorage.getItem("userYear");
+    
+    if (savedUserName) {
+        document.getElementById("userName").value = savedUserName;
+    }
+    if (savedUserDepartment) {
+        document.getElementById("userDepartment").value = savedUserDepartment;
+    }
+    if (savedUserYear) {
+        document.getElementById("userYear").value = savedUserYear;
+    }
+}
+
+// เรียกใช้ฟังก์ชัน loadFormData เมื่อโหลดหน้าเว็บ
+window.onload = function() {
+    loadFormData();
+};
+
+// เมื่อกรอกข้อมูลให้บันทึกข้อมูลทุกครั้ง
+document.getElementById("userName").addEventListener("input", saveFormData);
+document.getElementById("userDepartment").addEventListener("change", saveFormData);
+document.getElementById("userYear").addEventListener("change", saveFormData);
+        
+    </script>
+</body>
+</html>
